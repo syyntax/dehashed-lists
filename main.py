@@ -1,16 +1,39 @@
-# This is a sample Python script.
+import argparse
+from json import loads
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+parser = argparse.ArgumentParser(description="Create a user and password list using results from Dehashed.")
+parser.add_argument("--file", action="store", help="Import JSON from file.", type=str, dest="infile", default=None,
+                    metavar="FILE")
+parser.add_argument("--output", action="store", help="Output to FILE.", type=str, dest="outfile", default="users.lst",
+                    metavar="FILE")
+
+args = parser.parse_args()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def get_data(json):
+    return loads(open(json, 'r').read())
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def get_users(data):
+    for i in data['entries']:
+        with open('users.lst', 'a') as f:
+            f.write(f"{i['email']}\n")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+def get_passwords(data):
+    for i in data['entries']:
+        with open('pass.lst', 'a') as f:
+            f.write(f"{i['password']}\n")
+
+
+def get_userpass(data):
+    for i in data['entries']:
+        if len(i['password']) > 0:
+            with open('userpass.lst', 'a') as f:
+                f.write(f"{i['email']}:{i['password']}\n")
+
+
+a = get_data(args.infile)
+get_users(a)
+get_passwords(a)
+get_userpass(a)
