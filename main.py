@@ -2,10 +2,9 @@ import argparse
 from json import loads
 
 parser = argparse.ArgumentParser(description="Create a user and password list using results from Dehashed.")
-parser.add_argument("--file", action="store", help="Import JSON from file.", type=str, dest="infile", default=None,
-                    metavar="FILE")
-parser.add_argument("--output", action="store", help="Output to FILE.", type=str, dest="outfile", default="users.lst",
-                    metavar="FILE")
+parser.add_argument("--file", "-f", action="store", help="Import JSON from file.", type=str, dest="infile",
+                    default=None, metavar="FILE")
+parser.add_argument("--email", "-e", action="store_true", help="Include emails as a valid username option.")
 
 args = parser.parse_args()
 
@@ -15,22 +14,26 @@ def get_data(json):
 
 
 def get_users(data):
-    for i in data['entries']:
-        with open('users.lst', 'a') as f:
-            f.write(f"{i['email']}\n")
+    lines = set()
+    [lines.add(i['email']) for i in data['entries']]
+    with open('users.lst', 'a') as f:
+        [f.write(f"{line}\n") for line in lines]
 
 
 def get_passwords(data):
-    for i in data['entries']:
-        with open('pass.lst', 'a') as f:
-            f.write(f"{i['password']}\n")
+    lines = set()
+    [lines.add(i['password']) for i in data['entries'] if not i['password'] == '']
+    with open('pass.lst', 'a') as f:
+        [f.write(f"{line}\n") for line in lines]
 
 
 def get_userpass(data):
-    for i in data['entries']:
-        if len(i['password']) > 0:
-            with open('userpass.lst', 'a') as f:
-                f.write(f"{i['email']}:{i['password']}\n")
+    lines = set()
+    [lines.add(f"{i['username']}:{i['password']}") for i in data['entries'] if not i['password'] == '' and not
+        i['username'] == '']
+    [lines.add(f"{i['email']}:{i['password']}") for i in data['entries'] if not i['password'] == '' and args.email]
+    with open('userpass.lst', 'a') as f:
+        [f.write(f"{line}\n") for line in lines]
 
 
 a = get_data(args.infile)
